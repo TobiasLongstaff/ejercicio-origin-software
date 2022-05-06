@@ -1,20 +1,19 @@
 import React, { useState } from 'react'
-import { UilAt, UilKeySkeletonAlt, UilUser } from '@iconscout/react-unicons'
 import { Link } from 'react-router-dom'
 import Swal from 'sweetalert2/dist/sweetalert2.all.min.js'
-import url from '../services/Settings'
-import MensajeError from '../components/mensaje-error/MensajeError'
+import { url } from '../services/Settings'
+import { TextField, Button, Alert } from '@mui/material'
 
 const Registro = () =>
 {
     const [ form, setForm ] = useState(
     {
-        nombre_apellido: '',
-        mail: '',
+        nombre: '',
+        email: '',
         password: '',
         password_con: ''
     })
-    const [ error, setError ] = useState()
+    const [ error, setError ] = useState(null)
 
     const handelRegistro = async e =>
     {
@@ -36,7 +35,7 @@ const Registro = () =>
             Swal.showLoading()
             let res = await fetch(url+'registro', config)
             let infoPost = await res.json()
-            if(infoPost.id)
+            if(infoPost.serverStatus == 2)
             {
                 Swal.fire(
                     'Cuenta creada exitosamente',
@@ -44,25 +43,24 @@ const Registro = () =>
                     'success'
                 )
                 setForm({         
-                    nombre_apellido: '',
-                    mail: '',
+                    nombre: '',
+                    email: '',
                     password: '',
                     password_con: '' 
                 });
-                setError('')
             }
             else
             {
-                Swal.close()
+                
                 setError(infoPost.error)
             }
         }
         catch (error)
         {
             console.error(error)
-            Swal.close()
             setError('Error al registrarte intentar mas tarde')
         }
+        Swal.close()
     }
 
     const handelChange = e =>
@@ -76,34 +74,26 @@ const Registro = () =>
 
     return(
         <article>
-            <main className="container-login">
-                <form className="form-general" onSubmit={handelRegistro}>
-                    <header className="container-titulo-form">
+            <main className="container-box">
+                <form className="box" onSubmit={handelRegistro}>
+                    <header className="container-title">
                         <h2>Crear Cuenta</h2>
                     </header>
-                    <main className="container-textbox">
-                        <div className="form-group">
-                            <input type="text" value={form.nombre_apellido} name="nombre_apellido" className="form-style" placeholder="Nombre Apellido" onChange={handelChange} required />
-                            <UilUser size="25" className="input-icon"/>
-                        </div>
-                        <div className="form-group">
-                            <input type="email" name="mail" value={form.mail} className="form-style" placeholder="E-Mail" onChange={handelChange} required />
-                            <UilAt size="25" className="input-icon"/>
-                        </div>
-                        <div className="form-group">
-                            <input type="password" name="password" value={form.password} className="form-style" placeholder="Contraseña" onChange={handelChange} required />
-                            <UilKeySkeletonAlt size="25" className="input-icon"/>
-                        </div>
-                        <div className="form-group">
-                            <input type="password" name="password_con" value={form.password_con} className="form-style" placeholder="Confirmar Contraseña" onChange={handelChange} required />
-                            <UilKeySkeletonAlt size="25" className="input-icon"/>
-                        </div>
-                        <MensajeError error={error}/>
+                    <main className="container-input">
+                        <TextField sx={{ width: 400 }} type="text" value={form.nombre} name="nombre" label="Nombre Apellido" variant="outlined" onChange={handelChange} required/>
+                        <TextField sx={{ width: 400 }} type="email" value={form.email} name="email" label="E-Mail" variant="outlined" onChange={handelChange} required/>
+                        <TextField sx={{ width: 400 }} type="password" value={form.password} name="password" label="Contraseña" variant="outlined" onChange={handelChange} required/>
+                        <TextField sx={{ width: 400 }} type="password" value={form.password_con} name="password_con" label="Contraseña" variant="outlined" onChange={handelChange} required/>
                     </main>
+                    {error ? 
+                        <Alert severity="error">{error}</Alert>
+                        :
+                        <></>
+                    }
                     <div className="container-btn">
-                        <input type="submit" value="Crear Cuenta" className="btn-general"/>
-                        <Link to="/" className="link-general">
-                            <button type="button" className="btn-general btn-secundario">Volver</button>
+                        <Button sx={{ width: 195 }} type="submit" variant="contained">Crear Cuenta</Button>
+                        <Link to="/">
+                            <Button sx={{ width: 195, height: 50 }} variant="outlined">Volver</Button>
                         </Link>
                     </div>
                 </form>

@@ -1,17 +1,28 @@
-import React, {useState} from 'react'
-import MensajeError from '../components/mensaje-error/MensajeError'
-import { UilAt, UilKeySkeletonAlt } from '@iconscout/react-unicons'
-import { Link } from 'react-router-dom'
-import url from '../services/Settings'
+import React, { useState, useEffect } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import { url } from '../services/Settings'
+import { TextField, Button, Alert } from '@mui/material'
+import Cookies from 'universal-cookie'
+
+const cookie = new Cookies
 
 const Login = () =>
 {
+    let navigate = useNavigate()
     const [ form, setForm ] = useState(
     {
-        mail: '',
+        email: '',
         password: '',
     })
-    const [ error, setError ] = useState()
+    const [ error, setError ] = useState(null)
+
+    useEffect(() =>
+    {
+        if(cookie.get('hashSession') != null)
+        {
+            navigate('/mis-acciones')
+        }
+    },[])
 
     const handelSubmit = async e =>
     {
@@ -30,12 +41,14 @@ const Login = () =>
             }
             let res = await fetch(url+'login', config)
             let infoPost = await res.json()
-            if(infoPost.nombre != null)
+            console.log(infoPost)
+            // if(typeof infoPost[0].id !== 'undefined')
+            if(typeof infoPost.error == 'undefined')
             {
-                cookie.set('nombre', infoPost.nombre, {path: '/'})
-                cookie.set('mail', form.mail, {path: '/'})
-                cookie.set('hashSession', infoPost.idHash, {path: '/'})
-                navigate('/cuestionarios')
+                cookie.set('nombre', infoPost[0].nombre_apellido, {path: '/'})
+                cookie.set('mail', form.email, {path: '/'})
+                cookie.set('hashSession', infoPost[0].id, {path: '/'})
+                navigate('/mis-acciones')
             }
             else
             {
@@ -44,6 +57,7 @@ const Login = () =>
         }
         catch (error)
         {
+            setError('Error inesperado intentar mas tarde')
             console.error(error)
         }
     }
@@ -59,26 +73,24 @@ const Login = () =>
 
     return(
         <article>
-            <main className="container-login">
-                <form className="form-general" onSubmit={handelSubmit}>
-                    <header className="container-titulo-form">
+            <main className="container-box">
+                <form className="box" onSubmit={handelSubmit}>
+                    <header className="container-title">
                         <h2>Iniciar sesión</h2>
                     </header>
-                    <main className="container-textbox">
-                        <div className="form-group">
-                            <input type="email" name="mail" className="form-style" placeholder="E-Mail" onChange={handelChange} required />
-                            <UilAt size="25" className="input-icon"/>
-                        </div>                   
-                        <div className="form-group">
-                            <input type="password" name="password" className="form-style" placeholder="Contraseña" onChange={handelChange} required />
-                            <UilKeySkeletonAlt size="25" className="input-icon"/>
-                        </div>	
-                        <MensajeError error={error} />
+                    <main className="container-input">
+                        <TextField sx={{ width: 400 }} type="email" name="email" label="E-mail" variant="outlined" onChange={handelChange} required/>
+                        <TextField sx={{ width: 400 }} type="password" name="password" label="Contraseña" variant="outlined" onChange={handelChange} required/>
                     </main>
+                    {error ? 
+                        <Alert severity="error">{error}</Alert>
+                        :
+                        <></>
+                    }
                     <div className="container-btn">
-                        <input type="submit" value="Iniciar sesión" className="btn-general"/>
-                        <Link to="/registro" className="link-general">
-                            <button type="button" className="btn-general btn-secundario">Crear Cuenta</button>
+                        <Button sx={{ width: 195 }} type="submit" variant="contained">Iniciar sesión</Button>
+                        <Link to="/registro">
+                            <Button sx={{ width: 195, height: 50 }} variant="outlined">Crear Cuenta</Button>
                         </Link>
                     </div>
                 </form>

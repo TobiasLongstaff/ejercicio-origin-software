@@ -5,10 +5,10 @@ import { UilSignout, UilAngleLeft } from '@iconscout/react-unicons'
 // import Cookies from 'universal-cookie'
 import { useNavigate } from 'react-router-dom'
 import Swal from 'sweetalert2/dist/sweetalert2.all.min.js'
-import { motion } from 'framer-motion'
 import { Button} from '@mui/material'
+import Cookies from 'universal-cookie'
 
-// const cookies = new Cookies
+const cookie = new Cookies
 
 const Navigation = ({titulo, volver}) =>
 {
@@ -21,12 +21,9 @@ const Navigation = ({titulo, volver}) =>
         {
             setVolver(
                 <Link to={volver}>
-                    <motion.button
-                        whileHover={{ backgroundColor: '#e7e8ea', color: '#0e0e23'}}
-                        whileTap={{ scale: 0.9 }}
-                        className="btn-nav-general-volver">
+                    <Button component="span">
                         <UilAngleLeft size="32"/>
-                    </motion.button>
+                    </Button>
                 </Link>
             )
         }
@@ -47,35 +44,24 @@ const Navigation = ({titulo, volver}) =>
         {
             if(result.isConfirmed) 
             {
-                // cookies.remove('hashSession')
-                // cookies.remove('nombre')
-                // cookies.remove('mail')
+                cookie.remove('hashSession')
+                cookie.remove('nombre')
+                cookie.remove('mail')
                 navigate('/')
             }
         })
-    }
-
-    const variants = 
-    {
-        visible: { opacity: 1 },
-        hidden: { opacity: 0 },
     }
 
     return (
         <nav>
             <header className="container-header-nav">
                 {botonVolver}
-                <motion.h1
-                    initial="hidden"
-                    animate="visible"
-                    transition={{ duration: 0.5 }}
-                    variants={variants}>
-                    {titulo}
-                </motion.h1>
+                <h1>{titulo}</h1>
+                <label>Usuario: {cookie.get('nombre')}</label>
             </header>
             <main className="container-controles-nav">
                 <div>
-                    <Button component="span">
+                    <Button component="span" onClick={()=>handelClick()}>
                         <UilSignout size="30"/>
                     </Button>
                 </div>

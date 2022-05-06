@@ -4,6 +4,48 @@ body
     font-family: 'Roboto', sans-serif;
 }
 
+a
+{
+    text-decoration: none;
+}
+
+.container-box
+{
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.box
+{
+    box-shadow: 0 0px 20px rgb(0 0 0 / 12%);
+    border-radius: 10px;
+    padding: 30px;
+    box-sizing: border-box;
+    gap: 25px;
+    display: grid;
+}
+
+.container-btn
+{
+    display: flex;
+    gap: 10px;
+    height: 50px;
+}
+
+.container-input
+{
+    display: grid;
+    gap: 20px;
+}
+
+.container-title
+{
+    text-align: center;
+}
+
 .container-header
 {
     display: flex;
@@ -13,7 +55,7 @@ body
 
 .container-acciones
 {
-    padding: 20px;
+    padding: 40px;
     height: calc(100vh - 70px);
     box-sizing: border-box;
 }
@@ -21,4 +63,35 @@ body
 .container-tabla
 {
     height: calc(100% - 76px);
+}
+
+.container-intervalo
+{
+    display: flex;
+    gap: 10px;
+    padding-bottom: 10px;
+}
+
+.container-historico
+{
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.container-date
+{
+    display: flex;
+    gap: 10px;
+}
+
+.input-date
+{
+    padding: 16.500px;
+    border-radius: 4px;
+    border: 1px solid #0000003b;
+    font-family: 'Roboto', sans-serif;
+    outline-color: #1565C0;
+    font-size: 1rem;
+    cursor: pointer;
 }

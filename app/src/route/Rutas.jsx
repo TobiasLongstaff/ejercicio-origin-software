@@ -14,7 +14,7 @@ function Rutas()
                 <Route exact path="/" element={<Login/>} />
                 <Route exact path="/registro" element={<Registro/>} />
                 <Route exact path="/mis-acciones" element={<AccionesFavoritas/>} />
-                <Route exact path="/data-accion/:id" element={<DataAccion/>} />
+                <Route exact path="/data-accion/:sim/:ex" element={<DataAccion/>} />
             </Routes>
         </BrowserRouter>
     )

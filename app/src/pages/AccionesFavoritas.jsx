@@ -1,35 +1,47 @@
 import React, { useState, useEffect } from 'react'
 import Navigation from '../components/Navegacion/Navegacion'
-import { Autocomplete, TextField, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from '@mui/material'
+import { Autocomplete, TextField, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Alert } from '@mui/material'
 import { UilPlus, UilTrash } from '@iconscout/react-unicons'
-import { Link } from 'react-router-dom'
-import url from '../services/Settings'
+import { Link, useNavigate } from 'react-router-dom'
+import { url } from '../services/Settings'
+import Cookies from 'universal-cookie'
+
+const cookie = new Cookies
 
 const AccionesFavoritas = () =>
 {
+    let navigate = useNavigate()
     const [ data, setData ] = useState([])
     const [ simbolos, setSimbolos ] = useState([])
+    const [ error, setError ] = useState(null)
     const [ value, setValue ] = useState(
     {
         simbolo: '',
         nombre: '',
         moneda: '',
-        usuario: '4'
+        usuario: cookie.get('hashSession')
     })
 
     useEffect(() =>
     {
-        obtenerAcciones()
-        obtenerSimbolos()
+        if(cookie.get('hashSession') == null)
+        {
+            navigate('/')
+        }
+        else
+        {
+            obtenerAcciones()
+            obtenerSimbolos()            
+        }
     },[])
 
     const obtenerAcciones = async () =>
     {
+        const id_usuario = cookie.get('hashSession')
         try
         {
-            let res = await fetch(url+'favoritos/4')
+            let res = await fetch(url+'favoritos/'+id_usuario)
             let data = await res.json()
-            console.log(data)
             if(typeof data !== 'undefined')
             {
                 setData(data)
@@ -60,11 +72,10 @@ const AccionesFavoritas = () =>
             if(infoPost.insertId > 0)
             {
                 obtenerAcciones()
-                console.log('cargado')
             }
             else
             {
-                console.error('error')
+                setError(infoPost.error)
             }
         }
         catch (error)
@@ -98,7 +109,6 @@ const AccionesFavoritas = () =>
 
     const eliminarAccion = async (id) =>
     {
-        console.log(id)
         try 
         {
             let config =
@@ -115,11 +125,10 @@ const AccionesFavoritas = () =>
             if(infoPost.serverStatus == 2)
             {
                 obtenerAcciones()
-                console.log('eliminado')
             }
             else
             {
-                console.error('error')
+                setError('Error al eliminar volver a intentar mas tarde')
             }
         }
         catch (error)
@@ -139,7 +148,7 @@ const AccionesFavoritas = () =>
                 simbolo: simbolo,
                 nombre: simbolos[elementIndex].instrument_name,
                 moneda: simbolos[elementIndex].currency,
-                usuario: '4'
+                usuario: cookie.get('hashSession')
             })
         }
     }
@@ -166,7 +175,12 @@ const AccionesFavoritas = () =>
                     />
                     <Button variant="contained" onClick={() => agregarAccion()} endIcon={<UilPlus />}>
                         Agregar Simbolo
-                    </Button>                        
+                    </Button>  
+                    {error ? 
+                        <Alert severity="error">{error}</Alert>
+                        :
+                        <></>
+                    }                      
                 </header>
                 <main className="container-tabla">
                     {(data.length > 0) ?
@@ -186,7 +200,7 @@ const AccionesFavoritas = () =>
                             <TableRow key={row.id}>
                                 <TableCell component="th" scope="row">{row.id}</TableCell>
                                 <TableCell>
-                                    <Link to={'/data-accion/'+row.id}>{row.simbolo}</Link>
+                                    <Link to={'/data-accion/'+row.simbolo}>{row.simbolo}</Link>
                                 </TableCell>
                                 <TableCell>{row.nombre}</TableCell>
                                 <TableCell>{row.moneda}</TableCell>

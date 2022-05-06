@@ -6,7 +6,6 @@ const mysql = require('mysql')
 const bcrypt = require('bcrypt')
 app.use(cors())
 
-
 const { insert_usuario, insert_accion, read_accion, remove_accion } = require('./operaciones')
 
 const connection = mysql.createConnection(
@@ -27,7 +26,39 @@ app.use(express.json())
 
 app.get('/', (request, response) => 
 {
-    response.send('hola1')
+    response.status(404)
+})
+
+
+app.post('/api/login', async (request, response) => 
+{
+    const usuario = request.body
+
+    if(!usuario.email || !usuario.password)
+    {
+        return response.json(
+        {
+            error: 'Requiere mail y contraseña'
+        })
+    }
+    else
+    {
+        connection.query('SELECT * FROM usuarios WHERE mail = ?', 
+        [usuario.email], async (error, result) =>
+        {
+            if(result.length <= 0 || !(await bcrypt.compare(usuario.password, result[0].password)))
+            {
+                return response.json(
+                {
+                    error: 'usuario o contraseña incorretas'
+                })
+            }
+            else
+            {
+                response.json(result)
+            }
+        })
+    }
 })
 
 app.post('/api/registro', async (request, response) => 
@@ -36,30 +67,44 @@ app.post('/api/registro', async (request, response) =>
 
     if(!usuario.email || !usuario.password)
     {
-        return response.status(400).json(
+        return response.json(
         {
             error: 'Requiere mail y contraseña'
         })
     }
     else
     {
-        if(usuario.password === usuario.password_con)
+        connection.query('SELECT * FROM usuarios WHERE mail = ?', 
+        [usuario.email], async (error, result) =>
         {
-            const passwordHash = await bcrypt.hash(usuario.password, 10)
-            insert_usuario(connection, 
-            { name: usuario.nombre, email: usuario.email, password: passwordHash },
-            (result) =>
+            if(result.length > 0)
             {
-                response.json(result)
-            })
-        }
-        else
-        {
-            return response.json(
+                return response.json(
+                {
+                    error: 'Este usuario ya se encuentra registrado'
+                })
+            }
+            else
             {
-                error: 'contraseñas distintas'
-            })
-        }
+                if(usuario.password === usuario.password_con)
+                {
+                    const passwordHash = await bcrypt.hash(usuario.password, 10)
+                    insert_usuario(connection, 
+                    { name: usuario.nombre, email: usuario.email, password: passwordHash },
+                    (result) =>
+                    {
+                        response.json(result)
+                    })
+                }
+                else
+                {
+                    return response.json(
+                    {
+                        error: 'contraseñas distintas'
+                    })
+                }
+            }
+        })
     }
 })
 
@@ -68,7 +113,7 @@ app.get('/api/favoritos/:id', async (request, response) =>
     const { id } = request.params
     if(!id)
     {
-        return response.status(400).json(
+        return response.json(
         {
             error: 'Se requieren datos'
         })
@@ -90,18 +135,32 @@ app.post('/api/favoritos', async (request, response) =>
 
     if(!accion.simbolo || !accion.nombre || !accion.moneda || !accion.usuario)
     {
-        return response.status(400).json(
+        return response.json(
         {
             error: 'Se requiere mas informacion'
         })
     }
     else
     {
-        insert_accion(connection, 
-        { simbolo: accion.simbolo, nombre: accion.nombre, moneda: accion.moneda, usuario: accion.usuario },
-        (result) =>
+        connection.query('SELECT * FROM acciones_favoritas WHERE simbolo = ? AND id_usuario = ?', 
+        [accion.simbolo, accion.usuario], async (error, result) =>
         {
-            response.json(result)
+            if(result.length > 0)
+            {
+                return response.json(
+                {
+                    error: 'Esta accion ya se encuentra en favoritos'
+                })
+            }
+            else
+            {
+                insert_accion(connection, 
+                { simbolo: accion.simbolo, nombre: accion.nombre, moneda: accion.moneda, usuario: accion.usuario },
+                (result) =>
+                {
+                    response.json(result)
+                })
+            }
         })
     }
 })
@@ -111,7 +170,7 @@ app.delete('/api/favoritos/:id', async (request, response) =>
     const { id } = request.params
     if(!id)
     {
-        return response.status(400).json(
+        return response.json(
         {
             error: 'Se requieren datos'
         })

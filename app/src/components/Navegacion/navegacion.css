@@ -3,7 +3,7 @@ nav
 {
     display: flex;
     align-items: center;
-    padding: 0 20px;
+    padding: 0 40px;
     justify-content: space-between;
     height: 70px; 
     font-size: 20px;
@@ -11,5 +11,7 @@ nav
 
 .container-header-nav
 {
-
+    display: flex;
+    align-items: center;
+    gap: 10px
 }

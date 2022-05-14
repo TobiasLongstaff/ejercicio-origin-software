@@ -4,6 +4,7 @@ import { key } from '../services/Settings'
 export const useAccion = (sim, ex) =>
 {
     const [intervalo, setIntervalo] = useState('1')
+    const [ error, setError ] = useState(null)
     const [dataGraficoAccion, setDataGraficoAccion ] = useState({
         title: {
             text: sim+'/'+ex
@@ -25,7 +26,6 @@ export const useAccion = (sim, ex) =>
 
     const obtenerDatosAccion = async (filtroFecha) =>
     {
-        console.log('iniciado')
         let filtro = ''
         if(typeof filtroFecha !== 'undefined') { filtro = filtroFecha }
         try
@@ -68,5 +68,33 @@ export const useAccion = (sim, ex) =>
         }
     }
 
-    return { dataGraficoAccion, obtenerDatosAccion }
+    const addFiltros = async (intervalo, tipoBusqueda, fechaAcciones) =>
+    {
+        if(tipoBusqueda !== 'historico') 
+        {
+            setInterval( obtenerDatosAccion ,intervalo*60*1000) 
+        }
+        else
+        {
+            if(fechaAcciones.fechaDesde !== '' && fechaAcciones.fechaHasta !== '')
+            {
+                obtenerDatosAccion('&start_date='+fechaAcciones.fechaDesde+'&end_date='+fechaAcciones.fechaHasta) 
+            }
+            else if(fechaAcciones.fechaDesde > fechaAcciones.fechaHasta)
+            {
+                setError('Fechas incorretas')
+            }
+            else
+            {
+                setError('Falta completar alguna fecha')                
+            }
+        }
+    }
+
+    const addIntervalo = (value) => 
+    {
+        setIntervalo(value)
+    }
+
+    return { dataGraficoAccion, obtenerDatosAccion, addFiltros, addIntervalo, error }
 }

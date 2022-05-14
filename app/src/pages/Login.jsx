@@ -5,14 +5,12 @@ import { useUser } from '../hooks/useUser'
 
 const Login = () =>
 {
-    const { login } = useUser()
+    const { login, error } = useUser()
     const [ form, setForm ] = useState(
     {
         email: '',
         password: '',
     })
-
-    const [ error, setError ] = useState(null)
 
     const handelSubmit = e =>
     {

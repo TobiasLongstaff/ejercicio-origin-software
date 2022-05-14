@@ -9,6 +9,7 @@ const cookie = new Cookies
 export const useUser = () =>
 {
     let navigate = useNavigate()
+    const [ error , setError ] = useState(null)
 
     const registro = async (form) =>
     {
@@ -35,18 +36,11 @@ export const useUser = () =>
                     '',
                     'success'
                 )
-                // setForm({         
-                //     nombre: '',
-                //     email: '',
-                //     password: '',
-                //     password_con: '' 
-                // });
             }
             else
             {
                 
-                // setError(infoPost.error)
-                console.log(infoPost.error)
+                setError(infoPost.error)
                 Swal.close()
             }
         }
@@ -74,8 +68,6 @@ export const useUser = () =>
             }
             let res = await fetch(url+'login', config)
             let infoPost = await res.json()
-            console.log(infoPost)
-            // if(typeof infoPost[0].id !== 'undefined')
             if(typeof infoPost.error == 'undefined')
             {
                 cookie.set('nombre', infoPost[0].nombre_apellido, {path: '/'})
@@ -85,13 +77,12 @@ export const useUser = () =>
             }
             else
             {
-                // setError(infoPost.error)
-                console.log(infoPost.error)
+                setError(infoPost.error)
             }
         }
         catch (error)
         {
-            // setError('Error inesperado intentar mas tarde')
+            setError('Error inesperado intentar mas tarde')
             console.error(error)
         }
     }
@@ -119,5 +110,5 @@ export const useUser = () =>
         })
     }
 
-    return { registro, login, clsSesion }
+    return { registro, login, clsSesion, error }
 }

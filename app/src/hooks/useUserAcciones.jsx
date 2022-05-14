@@ -1,12 +1,22 @@
 import { useState, useEffect } from 'react'
 import Cookies from 'universal-cookie'
 import { url } from '../services/Settings'
+import { useSimbolos } from '../hooks/useSimbolos'
 
 const cookie = new Cookies
 
 export const useUserAcciones = () =>
 {
+    const { dataSimbolos } = useSimbolos()
     const [ dataAcciones, setDataAcciones ] = useState([])
+    const [ error, setError ] = useState(null)
+    const [ value, setValue ] = useState(
+        {
+            simbolo: '',
+            nombre: '',
+            moneda: '',
+            usuario: cookie.get('hashSession')
+        })
 
     useEffect(() =>
     {
@@ -27,10 +37,11 @@ export const useUserAcciones = () =>
         catch (error)
         {
             console.error(error)
+            setError('Error inesperado intentar mas tarde')
         }
     }
 
-    const addAccion = async (value) =>
+    const addAccion = async () =>
     { 
         try 
         {
@@ -52,12 +63,12 @@ export const useUserAcciones = () =>
             }
             else
             {
-                // setError(infoPost.error)
-                console.log(infoPost.error)
+                setError(infoPost.error)
             }
         }
         catch (error)
         {
+            setError('Error inesperado intentar mas tarde')
             console.error(error)
         }
     }
@@ -84,14 +95,30 @@ export const useUserAcciones = () =>
             else
             {
                 setError('Error al eliminar volver a intentar mas tarde')
-                console.log(infoPost.error)
             }
         }
         catch (error)
         {
+            setError('Error inesperado intentar mas tarde')
             console.error(error)
         }
     }
 
-    return { dataAcciones, addAccion, delAccion }
+    const selectAccion = (simbolo) =>
+    {
+        if(simbolo !== null)
+        {
+            const arraySimbolo = simbolo.split('/')
+            let elementIndex = dataSimbolos.findIndex((obj => obj.symbol == arraySimbolo[0]))
+            setValue(
+            {
+                simbolo: simbolo,
+                nombre: dataSimbolos[elementIndex].instrument_name,
+                moneda: dataSimbolos[elementIndex].currency,
+                usuario: cookie.get('hashSession')
+            })
+        }
+    }
+
+    return { dataAcciones, addAccion, delAccion, selectAccion, error }
 }

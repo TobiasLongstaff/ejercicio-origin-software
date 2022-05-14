@@ -5,7 +5,7 @@ import { useUser } from '../hooks/useUser'
 
 const Registro = () =>
 {
-    const { registro } = useUser()
+    const { registro, error } = useUser()
     const [ form, setForm ] = useState(
     {
         nombre: '',
@@ -13,12 +13,17 @@ const Registro = () =>
         password: '',
         password_con: ''
     })
-    const [ error, setError ] = useState(null)
 
     const handelRegistro = e =>
     {
         e.preventDefault()
         registro(form)
+        setForm({         
+            nombre: '',
+            email: '',
+            password: '',
+            password_con: '' 
+        });
     }
 
     const handelChange = e =>

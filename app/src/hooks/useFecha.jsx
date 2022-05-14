@@ -13,8 +13,7 @@ export const useFecha = () =>
         if(dia.length === 1){ dia = '0'+dia }
 
         let fecha = hoy.getFullYear() + '-' + mes + '-' + dia
-        let hora = hoy.getHours() + ':' + hoy.getMinutes()
-        let fechaYHora = fecha + 'T' + hora
+        let fechaYHora = fecha + 'T00:00'
         setFecha(fechaYHora)
     },[])
 

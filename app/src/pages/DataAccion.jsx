@@ -3,18 +3,19 @@ import Navigation from '../components/Navegacion/Navegacion'
 import { RadioGroup, FormControlLabel, Radio, Button, Select, MenuItem, InputLabel, Alert } from '@mui/material'
 import Highcharts from 'highcharts'
 import HigchartsReact from 'highcharts-react-official'
-import { useParams, useNavigate } from 'react-router-dom'
-import Cookies from 'universal-cookie'
-import { key } from '../services/Settings'
-
-const cookie = new Cookies
+import { useParams } from 'react-router-dom'
+import { useAutenticacion } from '../hooks/useAutenticacion'
+import { useFecha } from '../hooks/useFecha'
+import Loading from '../components/Loading/Loading'
+import { useAccion } from '../hooks/useAccion'
 
 const DataAccion = () =>
 {
-    let navigate = useNavigate()
+    const { autenticacion } = useAutenticacion()
+    const { fecha } = useFecha()
     let { sim, ex } = useParams()
+    const { dataGraficoAccion, obtenerDatosAccion } = useAccion(sim, ex)
     const [intervalo, setIntervalo] = useState('1')
-    const [ fecha, setFecha ] = useState()
     const [ error, setError ] = useState(null)
     const [ fechaAcciones, setFechaAcciones ] = useState(
     {
@@ -24,39 +25,20 @@ const DataAccion = () =>
     const dateDesde = useRef()
     const dateHasta = useRef()
     const [ tipoBusqueda, setTipoBusqueda] = useState('tiempo-real')
-    const [options, setOpcions ] = useState({
-        title: {
-            text: sim+'/'+ex
-        },
-        xAxis: {
-          categories: [],
-        },
-        series: [
-            {
-                data: [] 
-            }
-        ]
-    })
 
-    useEffect(() =>
-    {
-        if(cookie.get('hashSession') == null)
-        {
-            navigate('/')
-        }
-        else
-        {
-            obtenerFechaActual()
-            obtenerDatosAccion()
-        }
-    },[])
+    // useEffect(() =>
+    // {
+    //     obtenerDatosAccion()
+    // },[])
 
-    useEffect(() =>
-    {
-        let activo = (tipoBusqueda !== 'historico') ? true : false
-        dateDesde.current.disabled = activo 
-        dateHasta.current.disabled = activo
-    },[tipoBusqueda])
+    // useEffect(() =>
+    // {
+    //     let activo = (tipoBusqueda !== 'historico') ? true : false
+    //     dateDesde.current.disabled = activo 
+    //     dateHasta.current.disabled = activo
+    // },[tipoBusqueda])
+
+    // agregar este filtro al custom hook
 
     const cargarFiltros = async () =>
     {
@@ -81,64 +63,6 @@ const DataAccion = () =>
         }
     }
 
-    const obtenerDatosAccion = async (filtroFecha) =>
-    {
-        let filtro = ''
-        if(typeof filtroFecha !== 'undefined') { filtro = filtroFecha }
-        try
-        {
-            let res = await fetch('https://api.twelvedata.com/time_series?symbol='+sim+'&interval='+intervalo+'min&exchange='+ex+'&apikey='+key+filtro)
-            let data = await res.json()
-            if(data.status == 'ok')
-            {
-                const arrayClose = []
-                const arrayDate = []
-
-                data.values.map((fila) =>
-                {
-                    arrayClose.push(parseInt(fila.close))
-                    arrayDate.push(fila.datetime)
-                })
-
-                setOpcions(
-                {
-                    xAxis: {
-                        categories: arrayDate,
-                    },
-                    series: [
-                        {
-                            data: arrayClose
-                        }
-                    ]
-                })
-            }
-            else
-            {
-                console.error(data.message)
-                setError('Error al ingresar algun dato')
-            }
-        }
-        catch(error)
-        {
-            console.error(error)
-            setError('Error al ingresar algun dato')
-        }
-    }
-
-    const obtenerFechaActual = () =>
-    {
-        var hoy = new Date()
-        let mes = String(hoy.getMonth() + 1)
-        let dia = String(hoy.getDate())
-        if(mes.length === 1){ mes = '0'+mes }
-        if(dia.length === 1){ dia = '0'+dia }
-
-        var fecha = hoy.getFullYear() + '-' + mes + '-' + dia
-        var hora = hoy.getHours() + ':' + hoy.getMinutes()
-        var fechaYHora = fecha + 'T' + hora
-        setFecha(fechaYHora)
-    }
-
     const handelFechas = e =>
     {
         setFechaAcciones({
@@ -157,6 +81,8 @@ const DataAccion = () =>
         setIntervalo(e.target.value);
     }
 
+    if(!autenticacion)
+        return <Loading />
     return (
         <article>
             <Navigation titulo="Accion" volver="/mis-acciones"/>
@@ -219,7 +145,7 @@ const DataAccion = () =>
                     }
                 </header>    
                 <main>
-                    <HigchartsReact highcharts={Highcharts} options={options} />
+                    <HigchartsReact highcharts={Highcharts} options={dataGraficoAccion} />
                 </main>            
             </div>
         </article>
